@@ -4,6 +4,67 @@ This document provides a comprehensive guide on how to replace standard C++ keyw
 
 ---
 
+## 📌 Assignment Context: `b1t_Lang` Custom DSL & Language Specification
+
+Assignment 4 (`A4_b1t_Lang`) implements an expressive C++ Domain-Specific Language (DSL) called **`b1t_Lang`**. It abstracts standard C++ constructs into intuitive aliases, loop macros, variadic math operations, and dynamic vector calculators.
+
+### 1. Master `b1t_Lang` Specification Table
+
+| Category | Custom Syntax / Function (`b1t_Lang`) | Standard Syntax (Standard C++) | Purpose & Behavior | Implementation / Mathematical Model |
+| :--- | :--- | :--- | :--- | :--- |
+| **Header Aliasing** | `#include common` / `common.h` | `#include <iostream>`, `<vector>`, etc. | Loads curated standard headers (fast compilation) | Curated non-redundant core STL headers |
+| | `#include all` / `all.h` | `#include <unordered_map>`, `<sstream>`, etc. | Loads extended standard library without duplicates | Extended STL headers with macro shielding |
+| **Entry Point** | `main { ... }` | `int main() { ... }` | Custom program entry point definition | Preprocessor macro: `#define main int main()` |
+| **Fast I/O** | `detach_C()` | `ios_base::sync_with_stdio(false); cin.tie(NULL);` | Detaches C stdio synchronization for high speed | Unties stream buffers & disables C sync |
+| **Stream Aliases** | `in >> x;` | `std::cin >> x;` | Fast, type-safe console input | `inline auto &in = std::cin;` |
+| | `out << x;` | `std::cout << x;` | Fast, type-safe console output | `inline auto &out = std::cout;` |
+| **Custom Loops** | `loop(i, 0, n, i++)` | `for (int i = 0; i < n; i++)` | Forward exclusive loop ($i < n$) | `#define loop(var, s, e, step) for(...)` |
+| | `loop2(i, 0, n, i++)` | `for (int i = 0; i <= n; i++)` | Forward inclusive loop ($i \le n$) | `#define loop2(var, s, e, step) for(...)` |
+| | `loopr(i, n, 0, i--)` | `for (int i = n; i > 0; i--)` | Reverse exclusive loop ($i > 0$) | `#define loopr(var, s, e, step) for(...)` |
+| | `loop2r(i, n, 0, i--)` | `for (int i = n; i >= 0; i--)` | Reverse inclusive loop ($i \ge 0$) | `#define loop2r(var, s, e, step) for(...)` |
+| | `for (int i = 0 until n by i++)` | `for (int i = 0; i < n; i++)` | English-like exclusive token loop | Macro expansion: `#define until ; i <` |
+| | `for (int i = 0 to n by i++)` | `for (int i = 0; i <= n; i++)` | English-like inclusive token loop | Macro expansion: `#define to ; i <=` |
+| **Variadic Math** | `sum(a, b, c, ...)` | `(a + b + c + ...)` | Variadic addition across $N$ arguments | C++17 Fold Expression: `(args + ...)` |
+| | `sub(a, b, c, ...)` | `(a - b - c - ...)` | Variadic sequential subtraction | C++17 Fold Expression: `(first - ... - rest)` |
+| | `mul(a, b, c, ...)` | `(a * b * c * ...)` | Variadic multiplication across $N$ arguments | C++17 Fold Expression: `(args * ...)` |
+| | `divi(a, b, c, ...)` | `((a / b) / c)` *(with manual `== 0` check)* | Variadic division with zero-division validation | Fold lambda + zero-divisor guard |
+| | `rem(a, b)` | `a % b` *(with manual `b == 0` check)* | Safe integer modulo / remainder | Zero divisor check + `a % b` |
+| **Variadic Extremes** | `mx(a, b, c, d, ...)` | `std::max({a, b, c, d})` | Variadic maximum across $N$ arguments | Fold Expression over comma operator: $\max(x_i)$ |
+| | `mn(a, b, c, d, ...)` | `std::min({a, b, c, d})` | Variadic minimum across $N$ arguments | Fold Expression over comma operator: $\min(x_i)$ |
+| **Math & Powers** | `pwr(base, exp)` | `std::pow(base, exp)` | Fast $O(\log n)$ integer/float exponentiation | Binary Exponentiation (handles negative exponents) |
+| | `sqr(x)` | `(x * x)` or `std::pow(x, 2)` | Square of a number ($x^2$) | Template inline multiplication: `x * x` |
+| | `cube(x)` | `(x * x * x)` or `std::pow(x, 3)` | Cube of a number ($x^3$) | Template inline multiplication: `x * x * x` |
+| | `abs_val(x)` | `std::abs(x)` | Absolute value ($\|x\|$) | `(x < 0) ? -x : x` |
+| | `fact(n)` | `std::tgamma(n + 1)` or loop | Factorial ($n!$) with negative protection | Iterative product loop: $\prod_{i=1}^n i$ |
+| | `sum_n(n)` | `(1LL * n * (n + 1)) / 2` | Constant-time $O(1)$ Gauss summation | Gauss formula with 64-bit overflow protection |
+| **Logic & Checks** | `is_even(n)` | `(n % 2 == 0)` | Boolean check: is integer even? | `(n % 2 == 0)` |
+| | `is_odd(n)` | `(n % 2 != 0)` | Boolean check: is integer odd? | `(n % 2 != 0)` |
+| | `is_pos(n)` | `(n > 0)` | Boolean check: is number strictly positive? | `(n > 0)` |
+| | `is_neg(n)` | `(n < 0)` | Boolean check: is number strictly negative? | `(n < 0)` |
+| | `is_eq(a, b)` | `(a == b)` | Generic equality comparison | `(a == b)` |
+| **Utilities** | `swp(a, b)` | `std::swap(a, b)` | In-place reference value swap | Mutable reference swap: `T &a, T &b` |
+| **Vector Overloads** | `sum(vector<T>)` | `std::accumulate(v.begin(), v.end(), 0)` | Dynamic vector summation | Range-based iteration over `vector<T>` |
+| | `sub(vector<T>)` | `v[0] - std::accumulate(...)` | Dynamic sequential vector subtraction | Index-based iteration ($v_0 - v_1 - \dots$) |
+| | `mul(vector<T>)` | `std::accumulate(..., multiplies<>())` | Dynamic vector multiplication | Range-based product accumulation |
+| | `divi(vector<T>)` | Manual loop with zero check | Dynamic safe vector division | Sequential vector division + zero-division guard |
+| | `mx(vector<T>)` | `*std::max_element(v.begin(), v.end())` | Dynamic maximum element in vector | Linear vector scan ($O(n)$) |
+| | `mn(vector<T>)` | `*std::min_element(v.begin(), v.end())` | Dynamic minimum element in vector | Linear vector scan ($O(n)$) |
+
+---
+
+### 2. Architecture of `Assignments/A4_b1t_Lang`
+
+```
+Assignments/A4_b1t_Lang/
+├── common.h       # Curated lightweight Standard C++ Library (<iostream>, <vector>, etc.)
+├── all.h          # Extended Standard C++ Library (shielded with pragma push/pop_macro)
+├── main.h         # Core DSL Engine: macros, stream aliases, math & vector functions
+└── main.cpp       # User application consuming the b1t_Lang DSL
+```
+
+---
+
+
 ## 1. Techniques to Replace C++ Keywords & Identifiers
 
 There are three primary approaches to replacing or aliasing C++ identifiers and keywords:
@@ -731,35 +792,10 @@ In a true custom language compiler (e.g. `b1t_Lang`), the **Lexer** recognizes t
 
 ---
 
-## 8. Custom DSL Math & Utility Library (Truncated Identifiers)
+## 8. Deep Dive: Mathematical & Algorithmic Implementations
 
-To build an intuitive, expressive Domain-Specific Language (DSL) like `b1t_Lang`, common mathematical, logical, and utility operations are packaged into clean, truncated functions:
+All custom math, logical, and utility operations summarized in the **Assignment Context** at the top of this document are engineered using modern C++ template metaprogramming, fold expressions, and algorithmic optimizations:
 
-### 1. Function Overview Table
-
-| Truncated Function | Original Proposal | Purpose | Standard C++ / Original Way (Without Custom Function) | Mathematical / Logic Model |
-| :--- | :--- | :--- | :--- | :--- |
-| **`sum(args...)`** | `jog` | Sum / Addition | `a + b + c` or `std::accumulate(v.begin(), v.end(), 0)` | $a + b + \dots$ |
-| **`sub(first, rest...)`** | `biyog` | Subtraction | `first - rest1 - rest2` or manual loop | $a - b - c - \dots$ |
-| **`mul(args...)`** | `gun` | Multiplication | `a * b * c` or `std::accumulate(..., multiplies<>())` | $a \times b \times \dots$ |
-| **`divi(first, rest...)`** | `vag` | Division | `a / b` (requires manual `if (b == 0)` check to prevent crash) | $a / b / \dots$ |
-| **`rem(a, b)`** | `vagshesh` | Modulo / Remainder | `a % b` (requires manual zero divisor check) | $a \pmod b$ |
-| **`mx(args...)`** | `boro` | Maximum of Multiple Values | `std::max({a, b, c, d})` or nested `std::max(a, std::max(b, c))` | $\max(x_1, \dots, x_n)$ |
-| **`mn(args...)`** | `choto` | Minimum of Multiple Values | `std::min({a, b, c, d})` or nested `std::min(a, std::min(b, c))` | $\min(x_1, \dots, x_n)$ |
-| **`pwr(base, exp)`** | `ghaat` | Power ($x^y$) | `std::pow(base, exp)` (requires `<cmath>`, double conversion) | $\text{base}^{\text{exp}}$ |
-| **`sqr(x)`** | `borgo` | Square | `x * x` or `std::pow(x, 2)` | $x^2 = x \times x$ |
-| **`cube(x)`** | `ghono` | Cube | `x * x * x` or `std::pow(x, 3)` | $x^3 = x \times x \times x$ |
-| **`abs_val(x)`** | `asolMaan` | Absolute Value | `std::abs(x)` (requires `<cmath>` or `<cstdlib>`) | $\|x\|$ |
-| **`fact(n)`** | `factorial` | Factorial ($n!$) | `long long f = 1; for(int i = 1; i <= n; ++i) f *= i;` | $n! = \prod_{i=1}^{n} i$ |
-| **`sum_n(n)`** | `nthJogfol` | Sum of 1 to $N$ | `long long s = 0; for(int i = 1; i <= n; ++i) s += i;` | $\sum_{i=1}^{n} i = \frac{n(n+1)}{2}$ |
-| **`is_even(n)`** | `jorKina` | Even Check | `(n % 2 == 0)` | $n \equiv 0 \pmod 2$ |
-| **`is_odd(n)`** | `bijorKina` | Odd Check | `(n % 2 != 0)` | $n \not\equiv 0 \pmod 2$ |
-| **`is_pos(n)`** | `dhonattok` | Positive Check | `(n > 0)` | $n > 0$ |
-| **`is_neg(n)`** | `rinattok` | Negative Check | `(n < 0)` | $n < 0$ |
-| **`is_eq(a, b)`** | `somanKina` | Equality Check | `(a == b)` | $a == b$ |
-| **`swp(a, b)`** | `bodlao` | Value Swap | `std::swap(a, b)` or `T temp = a; a = b; b = temp;` | $a \leftrightarrow b$ |
-
----
 
 ### 2. Deep Dive: How Each Function Works Under the Hood
 
@@ -1140,8 +1176,308 @@ In `main.cpp`, include the root DSL header `main.h`:
 
 | Header File | Purpose | Who Should Include It? |
 | :--- | :--- | :--- |
-| **`common.h`** | Standard C++ includes (`<iostream>`, `<vector>`, `<cmath>`, etc.) | Included by `main.h` |
-| **`all.h`** | Monolithic `<bits/stdc++.h>` bundle | Included by `main.h` |
+| **`common.h`** | Lightweight, fast standard C++ headers (`<iostream>`, `<vector>`, `<cmath>`, etc.) | **Included by `main.h`** |
+| **`all.h`** | Monolithic `<bits/stdc++.h>` bundle (competitive programming / all STL) | **Optional** (only when complete STL is required) |
 | **`main.h`** | Full DSL definitions (`main`, `detach_C`, `in`, `out`, `loop`, `sum`, `mx`, etc.) | **Included by `main.cpp`** |
 
 > 💡 **Best Practice Rule:** When writing a Domain-Specific Language (DSL) or custom framework in C++, your user program (`main.cpp`) should include the **single entry-point header** (`main.h` or `b1t_lang.h`) that exposes the language syntax and internally manages lower-level standard includes.
+
+---
+
+## 13. Deep Dive: Decoupling `common.h` vs. `all.h` in `main.h`
+
+### 1. The Redundant Include Anti-Pattern
+
+#### ❌ The Problem You Identified:
+If `main.h` includes `<bits/stdc++.h>` (or `all.h`) directly at the top:
+```cpp
+// ❌ Anti-Pattern in main.h:
+#include <bits/stdc++.h>
+#include "common.h"
+#include "all.h"
+```
+**Why this defeats the entire purpose of `common.h`:**
+1. **Compilation Bloat**: Even if you created `common.h` to avoid compiling massive STL headers, `main.h` forces the compiler to load `<bits/stdc++.h>` anyway. Every `.cpp` file that includes `main.h` suffers slow compile times.
+2. **Portability Issues**: `<bits/stdc++.h>` is a non-standard GCC header. On Clang, MSVC, or Apple Clang, including `main.h` will throw fatal header not found errors.
+3. **Redundant Redefinition**: Including both `<bits/stdc++.h>` and `common.h` forces the preprocessor to process identical header trees multiple times.
+
+---
+
+### 2. The Clean, Decoupled Architecture
+
+```
+┌────────────────────────────────────────────────────────────────────────┐
+│                      Clean Decoupled Architecture                      │
+├────────────────────────────────────────────────────────────────────────┤
+│                                                                        │
+│   ┌────────────────────────────────┐    ┌──────────────────────────┐   │
+│   │            common.h            │    │          all.h           │   │
+│   │   (Fast, standard C++ headers) │    │   (<bits/stdc++.h> only) │   │
+│   └───────────────┬────────────────┘    └─────────────┬────────────┘   │
+│                   │                                   │                │
+│                   ▼                                   │ (Optional CP)  │
+│   ┌────────────────────────────────┐                  │                │
+│   │             main.h             │                  │                │
+│   │  (DSL Core: depends ONLY on    │                  │                │
+│   │            common.h)           │                  │                │
+│   └───────────────┬────────────────┘                  │                │
+│                   │                                   │                │
+│                   ▼                                   ▼                │
+│   ┌────────────────────────────────────────────────────────────────┐   │
+│   │                            main.cpp                            │   │
+│   │                   (Uses #include "main.h")                     │   │
+│   └────────────────────────────────────────────────────────────────┘   │
+│                                                                        │
+└────────────────────────────────────────────────────────────────────────┘
+```
+
+#### ✅ How to Structure the Files:
+
+1. **`common.h`**: Only curated standard headers.
+   ```cpp
+   #ifndef COMMON_H
+   #define COMMON_H
+   #include <iostream>
+   #include <vector>
+   #include <string>
+   #include <cmath>
+   #include <algorithm>
+   #include <numeric>
+   #include <iomanip>
+   #include <map>
+   #include <set>
+   #include <queue>
+   #include <stack>
+   #include <utility>
+   #include <climits>
+   #endif
+   ```
+
+2. **`all.h`**: Standalone `<bits/stdc++.h>` wrapper.
+   ```cpp
+   #ifndef ALL_H
+   #define ALL_H
+   #include <bits/stdc++.h>
+   #endif
+   ```
+
+3. **`main.h`**: Core DSL engine — includes **`common.h` ONLY**.
+   ```cpp
+   #ifndef MAIN_H
+   #define MAIN_H
+
+   #include "common.h" // ✅ Lightweight & fast! Does NOT include <bits/stdc++.h>
+
+   #define all "all.h"
+   #define common "common.h"
+   #define main int main()
+
+   // In C++17, use 'inline' for global stream references inside headers
+   inline auto &in = std::cin;
+   inline auto &out = std::cout;
+
+   // ... DSL loop macros and math functions ...
+
+   #endif // MAIN_H
+   ```
+
+4. **`main.cpp`**: Includes `main.h`.
+   ```cpp
+   #include "main.h"
+
+   main {
+     detach_C();
+     out << "Fast and clean compilation!" << endl;
+     return 0;
+   }
+   ```
+
+---
+
+### 3. Header Best Practices: Guards & `inline` References
+
+#### A. Header Include Guards (`#ifndef` / `#define` / `#endif`)
+Without include guards, if a header is included multiple times across nested headers, the compiler tries to declare types and functions multiple times, triggering redefinition errors. Include guards ensure the file is processed only once per translation unit.
+
+#### B. `inline` Global References in C++17
+In C++, declaring a global reference or variable like `auto &in = std::cin;` directly inside a header file can cause **One Definition Rule (ODR)** violations and duplicate symbol linker errors if included by multiple `.cpp` files. Marking it with `inline`:
+```cpp
+inline auto &in = std::cin;
+inline auto &out = std::cout;
+```
+informs the compiler/linker that all translation units share the exact same single reference instance.
+
+---
+
+## 14. Computed Includes: Using `#include MACRO` (e.g. `#include common`)
+
+### 1. How Computed Includes Work in C++
+The C++ Preprocessor allows **Computed Includes** (macro expansion within an `#include` directive). If the token following `#include` is an identifier, the preprocessor expands any macro definitions associated with that identifier before looking for the file:
+
+```cpp
+#define common "common.h"
+#include common // Preprocessor expands 'common' -> "common.h", then includes it!
+```
+
+---
+
+### 2. The Golden Rule: Sequential Evaluation (Top-to-Bottom Order)
+
+The C++ Preprocessor executes strictly in **top-to-bottom sequential order**:
+
+#### ❌ Why `#include common` on Line 4 Fails When `#define` is on Line 7:
+```cpp
+// ❌ FAILS:
+#include common           // Line 4: 'common' is NOT yet defined!
+#define common "common.h" // Line 7: Too late!
+```
+* **Compiler Error:** `error: '#include' expects '"FILENAME"' or '<FILENAME>'`
+* **Reason:** At Line 4, `common` is just a plain raw identifier without quotes or angle brackets. The preprocessor does not know about definitions that appear further down in the file.
+
+#### ✅ The Working Order:
+```cpp
+// ✅ WORKS:
+#define common "common.h" // Step 1: Register macro 'common' -> '"common.h"'
+#include common           // Step 2: Expands to: #include "common.h"
+```
+
+---
+
+### 3. Trade-Offs & Gotchas of Macro Aliasing (`#define common "common.h"`)
+
+While `#include common` works when `#define` comes first, consider these engineering trade-offs:
+
+1. **Identifier Poisoning / Collision:**
+   - Defining `#define common "common.h"` globally replaces the English word `common` across the entire codebase.
+   - If you later declare a variable, function, or namespace named `common`:
+     ```cpp
+     int common = 10; // ❌ Preprocessor turns this into: int "common.h" = 10; (Syntax Error!)
+     ```
+2. **IDE & Tooling Confusion:**
+   - Some code navigation tools (Go to Definition, IntelliSense) may not resolve jumping into `#include common` as reliably as direct `#include "common.h"`.
+3. **Recommendation:**
+   - Inside infrastructure headers like `main.h`, use direct `#include "common.h"` for maximum reliability and clarity.
+   - If providing short aliases for user scripts, define them before any computed includes are attempted.
+
+### 4. Transitive Inclusion: Why `#include common` is Redundant in `main.cpp`
+
+When `main.cpp` includes `main.h`:
+```
+main.cpp
+   │
+   ▼
+main.h  ──(transitive include)──▶  common.h (iostream, vector, cmath, etc.)
+```
+
+1. **How Transitive Inclusion Works:**
+   - When the compiler parses `#include "main.h"` in `main.cpp`, it expands `main.h`.
+   - Because `main.h` contains `#include common` (or `#include "common.h"`), all symbols and standard headers from `common.h` are automatically pulled into `main.cpp`.
+
+2. **Why Writing `#include common` in `main.cpp` is Redundant:**
+   - **Double Work:** Writing `#include common` again in `main.cpp` causes the preprocessor to open and scan `common.h` a second time.
+   - **Header Guards Save It:** The include guard `#ifndef COMMON_H` prevents double-declaration errors, but the include itself is completely unnecessary.
+   - **Static Analyzer Diagnostic:** Linters like Clangd/IWYU will immediately flag:
+     `"Included header common.h is not used directly (fix available)"` because all symbols are already available through the parent header `main.h`.
+
+3. **Rule of Thumb for Consumer Files (`main.cpp`):**
+   - In `main.cpp`, you **only need a single line at the top**:
+     ```cpp
+     #include "main.h"
+     ```
+   - Do NOT add `#include common` or `#include "common.h"` in `main.cpp`.
+
+---
+
+## 16. Non-Redundant Header Partitioning (`common.h` vs. `all.h`)
+
+To eliminate duplicate header parsing while maintaining access to the entire Standard C++ Library, the standard headers are strictly partitioned into two non-overlapping tiers:
+
+### 1. Header Partitioning Matrix
+
+```
+┌─────────────────────────────────────────────────────────────────────────────────┐
+│                           Standard C++ Library (STL)                            │
+├────────────────────────────────────────┬────────────────────────────────────────┤
+│           Tier 1: common.h             │             Tier 2: all.h              │
+│    (Lightweight & Core Everyday)       │     (Extended STL & System Headers)    │
+├────────────────────────────────────────┼────────────────────────────────────────┤
+│ • <iostream> (cin, cout, cerr, endl)   │ • <unordered_map>, <unordered_set>     │
+│ • <vector> (dynamic arrays)            │ • <array>, <list>, <forward_list>      │
+│ • <string> (std::string)               │ • <bitset> (bit manipulation)          │
+│ • <cmath> (sqrt, pow, sin, cos, etc.)  │ • <sstream> (stringstream)             │
+│ • <algorithm> (sort, binary_search)    │ • <string_view> (zero-copy strings)    │
+│ • <numeric> (accumulate, gcd, lcm)     │ • <regex> (regular expressions)        │
+│ • <iomanip> (setprecision, setw)       │ • <charconv> (fast numeric parsing)    │
+│ • <map>, <set>, <multimap>, <multiset> │ • <fstream>, <filesystem> (files)      │
+│ • <queue>, <priority_queue>, <stack>   │ • <functional>, <memory> (smart ptrs)  │
+│ • <deque>, <utility> (pair, make_pair) │ • <optional>, <variant>, <any>, <tuple>│
+│ • <climits>, <cstdint>                 │ • <random>, <chrono>, <complex>        │
+│                                        │ • <thread>, <mutex>, <atomic>, <future>│
+│                                        │ • <stdexcept>, <system_error>          │
+│                                        │ • <cstdio>, <cstdlib>, <cstring>, etc. │
+└────────────────────────────────────────┴────────────────────────────────────────┘
+```
+
+---
+
+### 2. Macro Shielding (`#pragma push_macro` / `#pragma pop_macro`)
+
+When using convenient macros like `#define all "all.h"` and `#define common "common.h"` alongside standard C++ headers, standard library symbols (such as `std::filesystem::perms::all`) will suffer macro collision errors unless shielded.
+
+#### 🛡️ The Solution:
+Inside `all.h`, temporary push and pop directives shield standard headers from colliding with user macros:
+
+```cpp
+#ifndef ALL_H
+#define ALL_H
+
+// 1. Temporarily save and undefine macros to prevent standard header corruption
+#pragma push_macro("all")
+#pragma push_macro("common")
+#undef all
+#undef common
+
+// 2. Include all extended standard headers cleanly
+#include <unordered_map>
+#include <sstream>
+#include <fstream>
+#include <filesystem>
+// ... other extended headers ...
+
+// 3. Restore macros for the rest of the user program
+#pragma pop_macro("common")
+#pragma pop_macro("all")
+
+#endif // ALL_H
+```
+
+---
+
+## 17. Glossary Additions
+
+### 12. **Header Redundancy / Include Bloat**
+> **Definition:** The practice of including broad, heavy headers (like `<bits/stdc++.h>`) inside a base library header (like `main.h`), thereby forcing every dependent consumer file to parse thousands of unneeded lines of code and slowing down build times.
+> - **Solution:** Separate includes into a lightweight `common.h` for general development and an optional `all.h` for situations requiring full STL access.
+
+### 13. **One Definition Rule (ODR) & `inline` Variables**
+> **Definition:** A core C++ rule stating that any variable, function, class, or template must have exactly one definition in any translation unit, and non-inline non-static entities must have exactly one definition across the entire program.
+> - **In C++17:** The `inline` keyword can be applied to variables and references in headers (`inline auto &in = std::cin;`) to allow them to be defined in header files without causing multiple-definition linker errors.
+
+### 14. **Computed Include (`#include MACRO`)**
+> **Definition:** A preprocessor capability in C and C++ where the token following `#include` is a macro name instead of a literal string or angle-bracketed header.
+> - **Mechanism:** The preprocessor expands the macro token into a valid string literal (e.g. `"common.h"`) before locating and opening the header.
+> - **Requirement:** The macro definition (`#define MACRO "file.h"`) must strictly precede the `#include MACRO` statement due to top-to-bottom evaluation.
+
+### 15. **Transitive Inclusion**
+> **Definition:** When header file `A` includes header file `B`, and source file `C` includes `A`, source file `C` automatically receives all declarations and types from `B` without having to `#include B` directly.
+> - **Redundancy:** Writing `#include B` in source file `C` in addition to `#include A` is redundant and can trigger static analysis warnings (such as Clangd's *unused direct include*).
+
+### 16. **Macro Shielding (`#pragma push_macro` / `#pragma pop_macro`)**
+> **Definition:** A compiler preprocessor extension (supported by GCC, Clang, and MSVC) that pushes the current definition of a macro onto an internal stack and restores it later.
+> - **Use Case:** Prevents short user macros (such as `all` or `common`) from colliding with standard library internal symbols (such as `std::filesystem::perms::all`) when standard headers are included after macro definitions.
+
+### 17. **Line Continuation (`\`) / Macro Line Splicing**
+> **Definition:** A backslash (`\`) placed at the very end of a line in C/C++ tells the preprocessor to delete the backslash and the following newline character (line splicing), effectively joining the two physical lines into a single logical line.
+> - **Why it is needed in `#define`:** Preprocessor `#define` directives naturally terminate at the end of the line (first newline). To write a macro that spans multiple lines for readability or when formatted by tools like `clang-format`, each intermediate line must end with `\`.
+
+

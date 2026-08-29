@@ -1,11 +1,8 @@
 #include "main.h"
 
-// using namespace std;
-
 main {
-  detach_C(); // Detach C I/O synchronization for fast I/O performance
+  detach_C();
 
-  // 1. Dynamic User Input (Loop with Updating Messages)
   int count;
   out << "How many numbers do you want to calculate? ";
   in >> count;
@@ -29,7 +26,6 @@ main {
   out << "MAX Hocche: " << mx(nums) << endl;
   out << "MIN Hocche: " << mn(nums) << endl;
 
-  // Additional DSL Function Demonstrations
   out << "\n--- Additional DSL Function Demonstrations ---" << endl;
   out << "Variadic Max mx(10, 45, 22, 99, 5): " << mx(10, 45, 22, 99, 5)
       << endl;
