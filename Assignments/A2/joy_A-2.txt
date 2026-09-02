@@ -1,0 +1,58 @@
+#include <stdio.h>
+#include <string.h>
+#include <ctype.h>
+
+int main()
+{
+    char com[500];
+    char temp[100];
+
+    int i;
+    int line = 0;
+
+    printf("Enter a String: ");
+
+
+    fgets(com, sizeof(com), stdin);
+
+    if(com[0] == '/' && com[1] == '/')
+    {
+        printf("#Single line comment\n");
+
+        line = 1;
+
+        printf("#Number of line: %d\n", line);
+    }
+
+    else if(com[0] == '/' && com[1] == '*')
+    {
+        while(strstr(com, "*/") == NULL)
+        {
+            fgets(temp, sizeof(temp), stdin);
+
+            strcat(com, temp);
+        }
+
+        printf("#Multi Line Comment\n");
+
+        line = 1;
+
+        for(i = 2; i < strlen(com) - 2; i++)
+        {
+            if(com[i] == '\n')
+            {
+                line++;
+            }
+        }
+
+        printf("#Number of line: %d\n", line);
+    }
+
+
+    else
+    {
+        printf("This Is not a Comment\n");
+    }
+
+    return 0;
+}
