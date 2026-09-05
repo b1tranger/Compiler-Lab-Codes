@@ -13,6 +13,7 @@
    - [3. Transition Diagrams, State Tables & Visuals](#3-transition-diagrams-state-tables--visuals)
    - [4. Edge Cases, Input Streams & Memory Safety](#4-edge-cases-input-streams--memory-safety)
    - [5. Modular C++ Architecture & Header Standards](#5-modular-c-architecture--header-standards)
+   - [6. Mandatory Source Code Theory Summary Footers](#6-mandatory-source-code-theory-summary-footers)
 5. [Build, Toolchain & Execution Standards](#build-toolchain--execution-standards)
 6. [Conversation & Prompt Archiving Guidelines (`doc/prompts/`)](#6-conversation--prompt-archiving-guidelines-docprompts)
    - [1. Destination & Naming](#1-destination--naming)
@@ -143,6 +144,46 @@ Whenever introducing string operations, comment filtering, tokenizers, or identi
   - Use `#pragma once` (or standard include guards) in all `.h` header files.
   - Keep definitions separated: declarations in `.h` and implementations in `.cpp`.
   - Avoid putting `using namespace std;` in public header files.
+
+### 6. Mandatory Source Code Theory Summary Footers
+- **Requirement**: Every newly added or modified source code file (`.c`, `.cpp`, `.py`) across the workspace (including `Lab_Codes/`, `doc/Assignments/`, and `doc/Assignments/Courtesy/`) **MUST include a standardized explanatory comment block at the very bottom** of the file summarizing the concepts from its corresponding theory documentation.
+- **Content Requirements**:
+  1. **Problem Statement**: Brief, clear description of the computational or compiler task.
+  2. **Core Technique / Algorithm**: Data structures, automata, or language constructs utilized.
+  3. **Complexity Profile**: Asymptotic time and auxiliary space bounds ($\mathcal{O}$).
+  4. **Edge Cases & Pitfalls**: Buffer safety, overflow protection, character domains, or stream delimiters.
+  5. **Theory Documentation Link**: Markdown link referencing the authoritative theory note in `learning/`.
+- **Standard Format**:
+  - **C / C++ (`.c`, `.cpp`)**:
+    ```cpp
+    /*
+    ================================================================================
+    Theory Summary & Algorithmic Notes (Ref: doc/Assignments/learning/<TheoryNote>.md)
+    ================================================================================
+    - Problem: <Task description>
+    - Technique: <Core algorithm, lookup table, or CFG rule>
+      1. <Step 1 mechanics>
+      2. <Step 2 mechanics>
+    - Complexity:
+      * Time: O(...)
+      * Space: O(...)
+    - Edge Cases & Safety:
+      * <Key boundary or overflow considerations>
+    ================================================================================
+    */
+    ```
+  - **Python (`.py`)**:
+    ```python
+    """
+    ================================================================================
+    Theory Summary & Algorithmic Notes (Ref: doc/Assignments/learning/<TheoryNote>.md)
+    ================================================================================
+    - Problem: <Task description>
+    - Technique: <Core data structure or method>
+    - Complexity: Time O(...), Space O(...)
+    ================================================================================
+    """
+    ```
 
 ---
 
