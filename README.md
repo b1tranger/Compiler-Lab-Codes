@@ -25,6 +25,10 @@ This repository documents hands-on implementations and theoretical explorations 
 - **Custom DSL & Compiler Projects**: Full-pipeline custom language and DSL engineering (e.g. `A4_b1t_Lang` Banglish Compiler).
 - **Core Languages**: C, C++ (C++20), and Python 3.
 
+
+Code Reference / Source:
+- https://github.com/sadiasemim139-ops/compilerlab
+
 ---
 
 ## Project Directory Structure
