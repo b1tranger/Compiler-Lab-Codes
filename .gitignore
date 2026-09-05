@@ -5,7 +5,10 @@
 
 # VS Code & Editor artifacts
 tempCodeRunnerFile*
-/.vscode
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/c_cpp_properties.json
 *.ini
 *.3
 .DS_Store
@@ -14,3 +17,4 @@ tempCodeRunnerFile*
 __pycache__/
 *.py[cod]
 *$py.class
+/.vscode
