@@ -2,6 +2,19 @@
 
 This guide documents the setup, verification, toolchain configuration, and practical instructions on how to compile and run C and C++ files for compiler lab work.
 
+## Table of Contents
+1. [Installed Toolchain Overview](#1-installed-toolchain-overview)
+2. [Toolchain Verification Commands](#2-toolchain-verification-commands)
+3. [How to Compile & Run C and C++ Files](#3-how-to-compile--run-c-and-c-files)
+   - [Option A: Single C++ File (.cpp) — Direct Command Line](#option-a-single-c-file-cpp--direct-command-line)
+   - [Option B: Single C File (.c) — Direct Command Line](#option-b-single-c-file-c--direct-command-line)
+   - [Option C: Implicit make (No Makefile Required)](#option-c-implicit-make-no-makefile-required)
+4. [Configuring VS Code "Code Runner" Extension](#4-configuring-vs-code-code-runner-extension)
+   - [Problem: Read-Only Output Tab Issue](#problem-read-only-output-tab-issue)
+   - [Solution: Enable "Run In Terminal"](#solution-enable-run-in-terminal)
+5. [Multi-File Projects & Custom Makefile](#5-multi-file-projects--custom-makefile)
+6. [Summary of Useful Flags & Tips](#6-summary-of-useful-flags--tips)
+
 ---
 
 ## 1. Installed Toolchain Overview

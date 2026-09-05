@@ -2,6 +2,24 @@
 
 This document provides a comprehensive summary of the concepts, issues, and solutions encountered in **Lab 5 (Header Files & Arithmetic Operations)**.
 
+## Table of Contents
+1. [Custom Header Files (.h) in C++](#1-custom-header-files-h-in-c)
+   - [What is a Header File?](#what-is-a-header-file)
+   - [#include "" vs #include <>](#include--vs-include-)
+   - [Best Practice: Header Guards](#best-practice-header-guards)
+2. [Issue 1: Compiler Warning — control reaches end of non-void function](#2-issue-1-compiler-warning--control-reaches-end-of-non-void-function)
+   - [The Warning](#the-warning)
+   - [Cause & Mechanism](#cause--mechanism)
+   - [Solution](#solution)
+3. [Issue 2: Garbage Output & std::cin Stream Failure](#3-issue-2-garbage-output--stdcin-stream-failure)
+   - [The Symptom](#the-symptom)
+   - [Why Did This Happen?](#why-did-this-happen)
+4. [Recovering from Input Stream Failures](#4-recovering-from-input-stream-failures)
+5. [Complete Corrected Code Reference](#5-complete-corrected-code-reference)
+   - [new.h](#newh)
+   - [new.cpp](#newcpp)
+6. [Key Takeaways Summary](#6-key-takeaways-summary)
+
 ---
 
 ## 1. Custom Header Files (`.h`) in C++

@@ -2,6 +2,23 @@
 
 This document provides a comprehensive guide to **String Functions and String Manipulation Techniques** in C, C++, and Python. String processing is a core requirement in compiler design—especially during **Lexical Analysis (Scanning)**, where source code text is parsed, tokenized, and classified into lexemes (keywords, identifiers, literals, operators, and comments).
 
+## Table of Contents
+1. [Role of String Functions in Compiler Design](#1-role-of-string-functions-in-compiler-design)
+2. [String Functions in C (<string.h> & <ctype.h>)](#2-string-functions-in-c-stringh--ctypeh)
+   - [2.1 Summary of <string.h> Functions](#21-summary-of-stringh-functions)
+   - [2.2 Detailed Explanation & Code Examples of String Concatenation: strcat() and strncat()](#22-detailed-explanation--code-examples-of-string-concatenation-strcat-and-strncat)
+   - [2.3 Summary of <ctype.h> Character Inspection Functions](#23-summary-of-ctypeh-character-inspection-functions)
+3. [String Functions in C++ (std::string & <algorithm>)](#3-string-functions-in-c-stdstring--algorithm)
+   - [3.1 std::string Member Functions](#31-stdstring-member-functions)
+   - [3.2 Using <algorithm> with Strings](#32-using-algorithm-with-strings)
+4. [String Methods in Python](#4-string-methods-in-python)
+   - [4.1 Python String Methods Summary](#41-python-string-methods-summary)
+5. [Cross-Language String Method Comparison Matrix](#5-cross-language-string-method-comparison-matrix)
+6. [Code Examples for Compiler Lexical Analysis](#6-code-examples-for-compiler-lexical-analysis)
+   - [6.1 C Example: Tokenization & Keyword/Identifier Checker](#61-c-example-tokenization--keywordidentifier-checker)
+   - [6.2 C++ Example: Substring Search, Trimming, and String Stream Splitting](#62-c-example-substring-search-trimming-and-string-stream-splitting)
+   - [6.3 Python Example: String Parsing & Token Classification](#63-python-example-string-parsing--token-classification)
+
 ---
 
 ## 1. Role of String Functions in Compiler Design

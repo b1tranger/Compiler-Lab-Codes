@@ -1,7 +1,16 @@
+# Binaries & Object files
 *.exe
 *.o
 *.out
+
+# VS Code & Editor artifacts
 tempCodeRunnerFile*
 /.vscode
-*.3
 *.ini
+*.3
+.DS_Store
+
+# Python caches
+__pycache__/
+*.py[cod]
+*$py.class

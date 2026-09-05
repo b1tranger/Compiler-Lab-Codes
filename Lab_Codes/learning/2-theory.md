@@ -2,6 +2,17 @@
 
 This document collects and summarizes key programming concepts, algorithms, data structures, and compiler design topics discussed during chat sessions. Entries are arranged in numeric sequence, with related and similar topics updated dynamically under their respective sections.
 
+## Table of Contents
+1. [Reading String Inputs with Spaces & Comment Classification (C, C++, Python)](#1-reading-string-inputs-with-spaces--comment-classification-c-c-python)
+   - [Overview](#overview)
+   - [Key Concepts & Pitfalls](#key-concepts--pitfalls)
+   - [Language Comparison & Input Functions](#language-comparison--input-functions)
+   - [Code Examples](#code-examples)
+     - [1. C++ Solution (Handling Spaces & Comments)](#1-c-solution-handling-spaces--comments)
+     - [2. C++ Multi-Line Stream Processing (Reading Spanning Lines)](#2-c-multi-line-stream-processing-reading-spanning-lines)
+     - [3. C Implementation](#3-c-implementation)
+     - [4. Python Implementation](#4-python-implementation)
+
 ---
 
 ## 1. Reading String Inputs with Spaces & Comment Classification (C, C++, Python)
