@@ -50,12 +50,16 @@ Compiler-Lab-Codes/
 │   ├── 5.Header_File/                     # Modular C++ header & source split
 │   │   ├── new.h                          # Custom header declarations & functions
 │   │   └── new.cpp                        # Driver implementation
+│   ├── 8.ValidateMathExpression/          # Infix mathematical expression validation
+│   │   ├── 8.1.cpp                        # Lab implementation
+│   │   └── 8.1_alt.cpp                    # Canonical corrected implementation
 │   └── learning/                          # Lab theory documentation
 │       ├── 1-cpp-environment-setup.md     # Toolchain & compiler setup
 │       ├── 2-theory.md                    # String reading & comment parsing
 │       ├── 3-theory.md                    # String functions in compiler design
 │       ├── 4-theory.md                    # Identifier classification
-│       └── 5-theory.md                    # Header files & stream handling
+│       ├── 5-theory.md                    # Header files & stream handling
+│       └── 8-theory.md                    # Mathematical expression validation & CFG
 └── doc/
     ├── Assignments/                       # Official term assignments & submissions
     │   ├── A1/                            # Assignment 1 (Anagrams, Char frequency)

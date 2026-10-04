@@ -46,13 +46,17 @@ Compiler-Lab-Codes/
 │   ├── 4.1.cpp                            # Identifier validation
 │   ├── 5.Header_File/                     # Modular C++ header & source files
 │   ├── 6.1.cpp                            # Lexical tokenization & classification
+│   ├── 8.ValidateMathExpression/          # Infix mathematical expression validation
+│   │   ├── 8.1.cpp                        # Lab implementation
+│   │   └── 8.1_alt.cpp                    # Canonical corrected implementation
 │   ├── ANKUR_lexical analysis_16-8-26.c   # Lexical analyzer implementation
 │   └── learning/                          # Lab theory documentation
 │       ├── 1-cpp-environment-setup.md     # Toolchain & environment guide
 │       ├── 2-theory.md                    # Comment parsing & string reading
 │       ├── 3-theory.md                    # String library functions in compilers
 │       ├── 4-theory.md                    # Identifier classification rules
-│       └── 5-theory.md                    # Header files & arithmetic handling
+│       ├── 5-theory.md                    # Header files & arithmetic handling
+│       └── 8-theory.md                    # Mathematical expression validation & CFG
 └── doc/
     ├── Assignments/                       # Coursework assignments & submissions
     │   ├── A1/                            # Assignment 1: Anagrams & char counts
@@ -89,6 +93,7 @@ Compiler-Lab-Codes/
 | **Lab 4** | [`4.1.cpp`](file:///d:/GitHub/UITS/Compiler-Lab-Codes/Lab_Codes/4.1.cpp) | Identifier validation and naming rules | [`4-theory.md`](file:///d:/GitHub/UITS/Compiler-Lab-Codes/Lab_Codes/learning/4-theory.md) |
 | **Lab 5** | [`5.Header_File/`](file:///d:/GitHub/UITS/Compiler-Lab-Codes/Lab_Codes/5.Header_File/) | Modular C++ compilation using `.h` & `.cpp` | [`5-theory.md`](file:///d:/GitHub/UITS/Compiler-Lab-Codes/Lab_Codes/learning/5-theory.md) |
 | **Lab 6** | [`6.1.cpp`](file:///d:/GitHub/UITS/Compiler-Lab-Codes/Lab_Codes/6.1.cpp) | Multi-token lexical analyzer & tokenizer | — |
+| **Lab 8** | [`8.ValidateMathExpression/`](file:///d:/GitHub/UITS/Compiler-Lab-Codes/Lab_Codes/8.ValidateMathExpression/) | Infix mathematical expression syntax validation | [`8-theory.md`](file:///d:/GitHub/UITS/Compiler-Lab-Codes/Lab_Codes/learning/8-theory.md) |
 
 ---
 
