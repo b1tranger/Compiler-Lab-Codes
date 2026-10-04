@@ -247,7 +247,7 @@ Each entry must include:
 1. **`## 1. User Request`**: Exact user input, prompt, and contextual IDE metadata (active file, line range).
 2. **`## 2. Code Inspected / Modified`**: Relevant diff blocks or source snippets before and after changes.
 3. **`## 3. Analysis & Key Insights`**: Compiler concept breakdown, lexical/parsing grammar insights, bug analysis, or algorithmic proof.
-4. **`## 4. Final Solution & Output`**: Verified source code, compilation commands, and test outputs.
+4. **`## 4. Final Solution & Output`**: Include the final solution and AI response verbatim exactly as delivered in the chat (never use placeholders like `*(Refer to output in main chat)*` or truncated summaries), along with verified source code, compilation commands, and test outputs.
 
 ### 4. Automatic Archiving Trigger
 * Automatically archive or append to `doc/prompts/` whenever a complete debugging sequence, project milestone, or major theoretical discussion concludes.
