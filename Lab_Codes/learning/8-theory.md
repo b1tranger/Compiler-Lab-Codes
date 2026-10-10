@@ -28,6 +28,11 @@ This document collects and explains theoretical and practical principles for **v
 5. [Edge Cases, Pitfalls & Test Matrix](#5-edge-cases-pitfalls--test-matrix)
    - [Comprehensive Test Case Suite](#comprehensive-test-case-suite)
    - [Memory & Delimiter Safety Recommendations](#memory--delimiter-safety-recommendations)
+6. [DSA Stack-Based Expression Validator (Pushdown Automata)](#6-dsa-stack-based-expression-validator-pushdown-automata)
+   - [Theoretical Motivation: Beyond Scalar Depth Counters](#theoretical-motivation-beyond-scalar-depth-counters)
+   - [Multi-Bracket Dyck Language Properties](#multi-bracket-dyck-language-properties)
+   - [C++ Stack Implementation Architecture (`8.1_stack.cpp`)](#c-stack-implementation-architecture-81_stackcpp)
+   - [Comparative Matrix: Scalar Counter vs Stack Model](#comparative-matrix-scalar-counter-vs-stack-model)
 
 ---
 
@@ -527,3 +532,78 @@ if __name__ == "__main__":
 2. **Bounds Checking for Lookahead**: Never inspect `exp[i + 1]` without first verifying `i + 1 < n`.
 3. **Prevent Unintentional Assignments**: Use compiler warnings (`-Wall -Wextra -Wparentheses`) to catch accidental assignments like `else if (flag = false)`.
 4. **Dyck Language Rule**: A simple total count comparison (`brCnt1 == brCnt2`) is strictly insufficient for parenthesis balancing; the prefix invariant ($\text{open} \ge \text{close}$) must hold throughout the entire stream.
+5. **Character Classifier & Size Cast Safety (`static_cast`)**:
+   - **`<cctype>` and Undefined Behavior**: Standard library functions like `isdigit(int ch)` require `ch` to be representable as `unsigned char` or equal to `EOF`. Because standard `char` is signed on many architectures, negative values (e.g., non-ASCII characters or values $> 127$) undergo sign extension into negative integers, causing Undefined Behavior (out-of-bounds array access in CRT lookup tables). Using `static_cast<unsigned char>(c)` guarantees values fall in the safe $[0, 255]$ domain.
+   - **Signed/Unsigned Comparisons**: `std::string::size()` yields `std::size_t` (unsigned integer). Comparing `int i` with `std::size_t` triggers compiler warnings (`-Wsign-compare`). Explicit casting with `static_cast<int>(exp.size())` establishes uniform signed integer indexing across lookahead checks (`i + 1 < n`) and boundary accesses (`n - 1`).
+
+---
+
+## 6. DSA Stack-Based Expression Validator (Pushdown Automata)
+
+### Theoretical Motivation: Beyond Scalar Depth Counters
+In standard arithmetic parsing, when expressions contain only a single type of parentheses `()`, the Dyck language can be validated using a scalar depth counter (`openCount`) with space complexity $\mathcal{O}(1)$. However, modern programming languages and mathematical notations feature **heterogeneous delimiter hierarchies**:
+- Round parentheses: `()`
+- Square brackets: `[]`
+- Curly braces: `{}`
+
+A scalar counter cannot preserve delimiter type or order. For example, in the erroneous expression:
+$$( 2 + [ 3 * 4 ) ]$$
+The count of opening symbols ($2$) equals closing symbols ($2$), and at no point does count fall below zero. Yet the expression is syntactically invalid because the delimiters are cross-interleaved ($\text{LIFO}$ order violated). A **Pushdown Automaton (PDA)** with a Last-In, First-Out (LIFO) stack is strictly required.
+
+### Multi-Bracket Dyck Language Properties
+The language of balanced multi-type brackets is the Dyck-k language ($D_k$). A string $w \in D_k$ satisfies:
+1. $w = \epsilon$ (empty string is balanced).
+2. $w = u \cdot v$ where $u, v \in D_k$ (concatenation).
+3. $w = \text{open}_i \cdot u \cdot \text{close}_i$ where $u \in D_k$ and $(\text{open}_i, \text{close}_i)$ is a matching delimiter pair.
+
+### C++ Stack Implementation Architecture (`8.1_stack.cpp`)
+[`Lab_Codes/8.ValidateMathExpression/8.1_stack.cpp`](file:///d:/GitHub/UITS/Compiler-Lab-Codes/Lab_Codes/8.ValidateMathExpression/8.1_stack.cpp) implements this architecture:
+
+```cpp
+bool isValidExpression(const string& exp) {
+  if (exp.empty()) return false;
+  int n = static_cast<int>(exp.size());
+  stack<char> bracketStack;
+
+  if (OP(exp[0]) || OP(exp[n - 1])) return false;
+
+  for (int i = 0; i < n; i++) {
+    char curr = exp[i];
+
+    if (isOpenBracket(curr)) {
+      bracketStack.push(curr);
+      if (i + 1 < n && (isCloseBracket(exp[i + 1]) || OP(exp[i + 1])))
+        return false;
+    } else if (isCloseBracket(curr)) {
+      if (bracketStack.empty() || !isMatchingPair(bracketStack.top(), curr))
+        return false;
+      bracketStack.pop();
+      if (i + 1 < n && (NUM(exp[i + 1]) || isOpenBracket(exp[i + 1])))
+        return false;
+    } else if (OP(curr)) {
+      if (i + 1 < n && !(NUM(exp[i + 1]) || isOpenBracket(exp[i + 1])))
+        return false;
+    } else if (NUM(curr)) {
+      if (i + 1 < n && isOpenBracket(exp[i + 1]))
+        return false;
+    } else {
+      return false;
+    }
+  }
+
+  return bracketStack.empty();
+}
+```
+
+### Comparative Matrix: Scalar Counter vs Stack Model
+
+| Metric / Capability | Scalar Counter (`8.1_alt.cpp`) | DSA Stack (`8.1_stack.cpp`) |
+| :--- | :--- | :--- |
+| **Supported Delimiters** | Single type `()` only | Heterogeneous `()`, `[]`, `{}` |
+| **Cross-Interleaving Detection** | Fails (e.g., `([)]` marked valid) | Detects and rejects ($LIFO$ top mismatch) |
+| **Time Complexity** | $\mathcal{O}(N)$ single pass | $\mathcal{O}(N)$ single pass |
+| **Auxiliary Space Complexity** | $\mathcal{O}(1)$ scalar integer | $\mathcal{O}(N)$ worst-case stack depth |
+| **Formal Automaton** | Deterministic Finite Counter Automaton | Pushdown Automaton ($\text{PDA}$) |
+| **Compiler Phase Integration** | Lightweight pre-scanner check | Direct match for standard AST/parser state stacks |
+
+
