@@ -1,0 +1,13 @@
+it seems that the `.c` file (used as input) in this folder containing the following code is required to run the flex commands:
+```
+hashontorvukto LTstdio.hGT
+integer x1 colon x2 colon x3 $
+floating p1 colon p2 $
+
+empty main LP RP
+LB
+	x3 assign x2 plus x1 $
+
+
+RB
+```

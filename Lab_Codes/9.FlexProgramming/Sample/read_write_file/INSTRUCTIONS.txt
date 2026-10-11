@@ -1,0 +1,2 @@
+the `read_write_file.l` file can be run in the same manner using flex commands. 
+it takes input from `in.txt` and creates `out.exe`

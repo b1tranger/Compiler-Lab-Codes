@@ -1,0 +1,2 @@
+follow the `Guide` and install `flex-2.5.4a-1.exe`.
+Then run files in the `Sample`
