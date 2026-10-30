@@ -4,6 +4,65 @@ This document provides a comprehensive guide on how to replace standard C++ keyw
 
 ---
 
+## Table of Contents
+1. [Assignment Context: b1t_Lang Custom DSL & Language Specification](#-assignment-context-b1t_lang-custom-dsl--language-specification)
+   - [1. Master b1t_Lang Specification Table](#1-master-b1t_lang-specification-table)
+   - [2. Architecture of Assignments/A4_b1t_Lang](#2-architecture-of-assignmentsa4_b1t_lang)
+2. [1. Techniques to Replace C++ Keywords & Identifiers](#1-techniques-to-replace-c-keywords--identifiers)
+   - [Method 1: Preprocessor Macros (#define) — The Direct Keyword Replacement](#method-1-preprocessor-macros-define--the-direct-keyword-replacement)
+   - [Method 2: C++ References & Stream Aliasing (auto& / std::ostream&)](#method-2-c-references--stream-aliasing-auto--stdostream)
+   - [Method 3: Custom Wrapper Functions & Operator Overloading](#method-3-custom-wrapper-functions--operator-overloading)
+   - [Method 4: Compiler/Transpiler Approach (Source-to-Source Translator)](#method-4-compilertranspiler-approach-source-to-source-translator)
+3. [2. Organizing Custom Keywords in Header Files (.h)](#2-organizing-custom-keywords-in-header-files-h)
+   - [Example Header: b1t_lang.h](#example-header-b1t_langh)
+   - [Usage in main.cpp](#usage-in-maincpp)
+4. [3. Summary Comparison](#3-summary-comparison)
+5. [4. Deep Dive: "Macros Ignore Namespaces & Scopes"](#4-deep-dive-macros-ignore-namespaces--scopes)
+   - [Why does this happen?](#why-does-this-happen)
+   - [The Problem: Accidental Name Collision](#the-problem-accidental-name-collision)
+6. [5. Deep Dive: "Type Safety"](#5-deep-dive-type-safety)
+   - [What is Type Safety?](#what-is-type-safety)
+   - [Why #define Macros Are NOT Type Safe](#why-define-macros-are-not-type-safe)
+   - [How C++ Type-Safe Alternatives Fix This](#how-c-type-safe-alternatives-fix-this)
+7. [6. Variable Arguments: std::initializer_list vs. Variadic Templates](#6-variable-arguments-stdinitializer_list-vs-variadic-templates)
+   - [1. What is std::initializer_list?](#1-what-is-stdinitializer_list)
+   - [2. The Alternative: C++17 Variadic Templates & Fold Expressions](#2-the-alternative-c17-variadic-templates--fold-expressions)
+   - [3. Dynamic Vector Overloads (Step-by-Step Breakdown)](#3-dynamic-vector-overloads-step-by-step-breakdown)
+   - [4. Comparison of Approaches for Variable Arguments](#4-comparison-of-approaches-for-variable-arguments)
+8. [7. Custom For-Loop Syntax via Preprocessor Tokens (to, until, by)](#7-custom-for-loop-syntax-via-preprocessor-tokens-to-until-by)
+   - [1. Macro Definitions](#1-macro-definitions)
+   - [2. How Token Expansion Works](#2-how-token-expansion-works)
+   - [3. Example Usage in Code](#3-example-usage-in-code)
+   - [4. The Variable Name Limitation & Universal Solutions](#4-the-variable-name-limitation--universal-solutions)
+9. [8. Deep Dive: Mathematical & Algorithmic Implementations](#8-deep-dive-mathematical--algorithmic-implementations)
+   - [2. Deep Dive: How Each Function Works Under the Hood](#2-deep-dive-how-each-function-works-under-the-hood)
+10. [9. Header Aliases (all, common) & Fast I/O Detachment (detach_C())](#9-header-aliases-all-common--fast-io-detachment-detach_c)
+    - [1. Header Bundles: all vs. common](#1-header-bundles-all-vs-common)
+    - [2. Fast I/O: Detaching C Streams from C++ Streams (detach_C())](#2-fast-io-detaching-c-streams-from-c-streams-detach_c)
+    - [3. The Interactive I/O Buffering Gotcha: Why Prompts Disappear When cin is Untied](#3-the-interactive-io-buffering-gotcha-why-prompts-disappear-when-cin-is-untied)
+11. [10. Key Takeaway](#10-key-takeaway)
+12. [11. Glossary](#11-glossary)
+13. [12. Troubleshooting & Diagnostic Guide: Header Dependency Architecture](#12-troubleshooting--diagnostic-guide-header-dependency-architecture)
+    - [1. The "Included header is not used directly (fix available)" Issue](#1-the-included-header-is-not-used-directly-fix-available-issue)
+    - [2. Root Cause Analysis](#2-root-cause-analysis)
+    - [3. The Fix](#3-the-fix)
+    - [4. Summary: Direct vs. Transitive Includes in Custom DSLs](#4-summary-direct-vs-transitive-includes-in-custom-dsls)
+14. [13. Deep Dive: Decoupling common.h vs. all.h in main.h](#13-deep-dive-decoupling-commonh-vs-allh-in-mainh)
+    - [1. The Redundant Include Anti-Pattern](#1-the-redundant-include-anti-pattern)
+    - [2. The Clean, Decoupled Architecture](#2-the-clean-decoupled-architecture)
+    - [3. Header Best Practices: Guards & inline References](#3-header-best-practices-guards--inline-references)
+15. [14. Computed Includes: Using #include MACRO (e.g. #include common)](#14-computed-includes-using-include-macro-eg-include-common)
+    - [1. How Computed Includes Work in C++](#1-how-computed-includes-work-in-c)
+    - [2. The Golden Rule: Sequential Evaluation (Top-to-Bottom Order)](#2-the-golden-rule-sequential-evaluation-top-to-bottom-order)
+    - [3. Trade-Offs & Gotchas of Macro Aliasing (#define common "common.h")](#3-trade-offs--gotchas-of-macro-aliasing-define-common-commonh)
+    - [4. Transitive Inclusion: Why #include common is Redundant in main.cpp](#4-transitive-inclusion-why-include-common-is-redundant-in-maincpp)
+16. [15. Non-Redundant Header Partitioning (common.h vs. all.h)](#15-non-redundant-header-partitioning-commonh-vs-allh)
+    - [1. Header Partitioning Matrix](#1-header-partitioning-matrix)
+    - [2. Macro Shielding (#pragma push_macro / #pragma pop_macro)](#2-macro-shielding-pragma-push_macro--pragma-pop_macro)
+17. [16. Glossary Additions](#16-glossary-additions)
+
+---
+
 ## 📌 Assignment Context: `b1t_Lang` Custom DSL & Language Specification
 
 Assignment 4 (`A4_b1t_Lang`) implements an expressive C++ Domain-Specific Language (DSL) called **`b1t_Lang`**. It abstracts standard C++ constructs into intuitive aliases, loop macros, variadic math operations, and dynamic vector calculators.
@@ -943,6 +1002,81 @@ inline void detach_C() {
    - By default, `cin` is **tied** to `cout`. This means before every `cin >> x`, C++ automatically flushes `cout` to ensure user prompts appear on screen.
    - Untying them (`cin.tie(NULL)`) avoids repeated flush cycles during bulk I/O (critical for competitive programming and large datasets).
 
+### 3. The Interactive I/O Buffering Gotcha: Why Prompts Disappear When `cin` is Untied
+
+#### The Symptom
+In interactive console applications (such as [`doc/Assignments/A4_b1t_Lang/main.cpp`](file:///d:/GitHub/UITS/Compiler-Lab-Codes/doc/Assignments/A4_b1t_Lang/main.cpp)), prompt statements like:
+```cpp
+out << "How many numbers do you want to calculate? ";
+in >> count;
+```
+fail to print on the terminal when the executable is launched. The console appears blank, frozen, or hung, waiting silently for the user to type input and press `Enter`. Only *after* values are inputted does the prompt text suddenly burst onto the screen out of order.
+
+#### Root Cause Analysis: How Stream Buffering & Tying Work
+
+Standard output streams in C++ (`std::cout`) are **buffered** in user memory to maximize I/O throughput:
+1. When you write characters to `out` without `std::endl` or `\n`, they are accumulated in an internal user-space memory buffer rather than executing an immediate operating system system call (`write()` / `WriteFile()`) for every character.
+2. Under normal C++ rules, `std::cin` is explicitly tied to `std::cout` via `cin.tie(&cout)`. This means that before any blocking extraction on `cin` begins, `cin` automatically triggers `cout.flush()`.
+3. However, `detach_C()` calls `cin.tie(NULL);`. This deliberately breaks the tie!
+4. Consequently, when `in >> count;` is reached, `out` is **never flushed**. The prompt characters remain trapped inside the stream buffer, and execution blocks indefinitely on keyboard input.
+
+```
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                      Default Tied Streams (Interactive Mode)                │
+│                                                                             │
+│  out << "Prompt: " ──▶ [ cout Buffer ]                                       │
+│                              │                                              │
+│                         Auto-Flushed! (via cin.tie(&cout))                  │
+│                              ▼                                              │
+│  Terminal Screen  ◀─── "Prompt: "                                           │
+│  in >> count;     ───▶ Blocks waiting for input (User clearly sees prompt)  │
+└─────────────────────────────────────────────────────────────────────────────┘
+
+                                      vs.
+
+┌─────────────────────────────────────────────────────────────────────────────┐
+│                 detach_C() with cin.tie(NULL) (Buffering Gotcha)            │
+│                                                                             │
+│  out << "Prompt: " ──▶ [ cout Buffer ] (Trapped! No automatic flush)        │
+│                              │                                              │
+│  Terminal Screen  ◀─── [ Blank / Seemingly Frozen Terminal ]                │
+│  in >> count;     ───▶ Blocks waiting for input (User sees NOTHING)         │
+│                              │                                              │
+│  User types '5' & presses Enter ──▶ Execution resumes                       │
+│                              │                                              │
+│                         Buffer Flushed later on std::endl!                  │
+│                              ▼                                              │
+│  Terminal Screen  ◀─── "Prompt: " (Appears out of sequence!)                │
+└─────────────────────────────────────────────────────────────────────────────┘
+```
+
+#### Interactive vs. Competitive Programming Paradigm
+
+| Aspect | Competitive Programming (Batch Mode) | Interactive CLI Console Mode |
+| :--- | :--- | :--- |
+| **I/O Source** | Redirected files / pipes (`input.txt`) | Live human keyboard (`stdin`) |
+| **User Prompts** | None (interactive strings produce "Wrong Answer") | Mandatory (guides user input) |
+| **`cin.tie(NULL)`** | ✅ Essential (eliminates costly buffer flushes) | ❌ Harmful (suppresses visible prompts) |
+| **`ios_base::sync_with_stdio(false)`** | ✅ Safe & High-Performance | ✅ Safe (as long as `printf`/`scanf` aren't mixed) |
+
+#### Three Remediation Strategies
+
+1. **Strategy 1 (Recommended): Omit `detach_C()` in Interactive Programs**
+   - For interactive console programs that display user prompts, simply omit or comment out `detach_C();`.
+   - `std::cin` remains tied to `std::cout`, guaranteeing that every prompt is visible before blocking.
+2. **Strategy 2: Explicit Stream Flushing**
+   - If `detach_C()` remains enabled, explicitly flush the stream whenever printing a prompt without a trailing newline:
+     ```cpp
+     out << "How many numbers do you want to calculate? " << flush;
+     in >> count;
+     ```
+3. **Strategy 3: Decoupled Fast I/O with Retained Tie**
+   - Keep C stdio detachment while preserving stream tying for interactive applications:
+     ```cpp
+     ios_base::sync_with_stdio(false);
+     cin.tie(&cout); // Preserve prompt auto-flushing
+     ```
+
 ---
 
 ## 10. Key Takeaway
@@ -1388,7 +1522,7 @@ main.h  ──(transitive include)──▶  common.h (iostream, vector, cmath, 
 
 ---
 
-## 16. Non-Redundant Header Partitioning (`common.h` vs. `all.h`)
+## 15. Non-Redundant Header Partitioning (`common.h` vs. `all.h`)
 
 To eliminate duplicate header parsing while maintaining access to the entire Standard C++ Library, the standard headers are strictly partitioned into two non-overlapping tiers:
 
@@ -1453,7 +1587,7 @@ Inside `all.h`, temporary push and pop directives shield standard headers from c
 
 ---
 
-## 17. Glossary Additions
+## 16. Glossary Additions
 
 ### 12. **Header Redundancy / Include Bloat**
 > **Definition:** The practice of including broad, heavy headers (like `<bits/stdc++.h>`) inside a base library header (like `main.h`), thereby forcing every dependent consumer file to parse thousands of unneeded lines of code and slowing down build times.

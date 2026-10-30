@@ -1,7 +1,9 @@
 #include "main.h"
 
 main {
-  detach_C();
+  // detach_C(); // Note: cin.tie(NULL) suppresses automatic cout buffer
+  // flushing before in >>. In interactive CLI mode, omit detach_C() so prompts
+  // display before waiting for user input.
 
   int count;
   out << "How many numbers do you want to calculate? ";
@@ -52,3 +54,31 @@ main {
 
   return 0;
 }
+
+/*
+================================================================================
+Theory Summary & Algorithmic Notes (Ref: doc/Assignments/learning/A4_theory.md)
+================================================================================
+- Problem: Demonstrate custom C++ DSL (b1t_Lang) syntax abstractions, including
+  stream aliasing (in/out), loop macros, variadic fold operations, and dynamic
+  vector math operations.
+- Technique:
+  1. Stream Management & Interactive I/O: C++ ties std::cin to std::cout by
+     default so that output buffers are automatically flushed before blocking
+input extractions. detach_C() breaks this tie via cin.tie(NULL), which is
+optimal for non-interactive competitive programming but causes un-flushed
+interactive prompts to buffer until after input.
+  2. Variadic Math & Fold Expressions: C++17 fold expressions expand operations
+     over parameter packs at compile time.
+  3. Safe Vector Calculations: Dynamic vector overloads provide bounds-checked,
+     zero-division guarded reductions across arbitrary-sized collections.
+- Complexity:
+  * Time: O(N) for vector reductions; O(log N) for binary exponentiation pwr().
+  * Space: O(N) auxiliary space for vector storage of user inputs.
+- Edge Cases & Safety:
+  * Zero-division guarded in divi() and rem().
+  * Negative exponent handling in binary exponentiation pwr().
+  * Prompt buffering: In interactive mode, keeping cin tied to cout guarantees
+    immediate console display of input prompts.
+================================================================================
+*/
