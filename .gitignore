@@ -19,3 +19,4 @@ __pycache__/
 *$py.class
 /.vscode
 *lex.yy.c
+*.zip

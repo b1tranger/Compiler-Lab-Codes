@@ -60,6 +60,10 @@ This document provides a comprehensive guide on how to replace standard C++ keyw
     - [1. Header Partitioning Matrix](#1-header-partitioning-matrix)
     - [2. Macro Shielding (#pragma push_macro / #pragma pop_macro)](#2-macro-shielding-pragma-push_macro--pragma-pop_macro)
 17. [16. Glossary Additions](#16-glossary-additions)
+18. [17. Interactive Driver Architecture & Modular Demo Harness](#17-interactive-driver-architecture--modular-demo-harness)
+    - [1. Driver Decoupling & The Minimal Base Principle](#1-driver-decoupling--the-minimal-base-principle)
+    - [2. Two-Tier State Navigation Machine (Choice 1 vs Choice 2)](#2-two-tier-state-navigation-machine-choice-1-vs-choice-2)
+    - [3. Function Catalog Table & Direct Profiling](#3-function-catalog-table--direct-profiling)
 
 ---
 
@@ -1611,6 +1615,91 @@ Inside `all.h`, temporary push and pop directives shield standard headers from c
 > - **Use Case:** Prevents short user macros (such as `all` or `common`) from colliding with standard library internal symbols (such as `std::filesystem::perms::all`) when standard headers are included after macro definitions.
 
 ### 17. **Line Continuation (`\`) / Macro Line Splicing**
+
+---
+
+## 17. Interactive Driver Architecture & Modular Demo Harness
+
+### 1. Driver Decoupling & The Minimal Base Principle
+In real-world software and compiler engineering, driver programs (such as `main.cpp`) should remain **minimal and focused on runtime flow control**, delegating heavy computation, utility routines, and test suites to modular header libraries (`main.h`).
+
+```
+┌─────────────────────────────────────────┐
+│               main.cpp                  │
+│  - Interactive CLI Flow Control         │
+│  - Input validation & loop dispatch     │
+└────────────────────┬────────────────────┘
+                     │ includes
+                     ▼
+┌─────────────────────────────────────────┐
+│                main.h                   │
+│  - DSL Core Engine (macros, templates)  │
+│  - show_function_table()                │
+│  - demo_specific(id)                    │
+│  - demo_all()                           │
+└─────────────────────────────────────────┘
+```
+
+By abstracting all demonstrations (`show_function_table`, `demo_specific`, `demo_all`) inside `main.h`, `main.cpp` is reduced to an expressive, clean menu loop that serves as a demo vehicle.
+
+---
+
+### 2. Two-Tier State Navigation Machine (Choice 1 vs Choice 2)
+The interaction design uses a two-tier finite state loop:
+1. **Tier 1 (Outer Loop)**:
+   - `1`: Show all function usage (`demo_all()`)
+   - `2`: Inspect specific function usage from table
+   - `3`: Exit
+2. **Tier 2 (Choice 2 Inner Loop)**:
+   - Displays the master table (`show_function_table()`).
+   - Accepts a function ID (`1-21`) to run `demo_specific(id)`.
+   - After execution, prompts user:
+     - `1`: Reprints the function table and stays in the loop for repeated profiling.
+     - `0`: Exits the inner while loop and returns to Tier 1, redisplaying the main menu (Choice 1, 2, 3).
+
+```mermaid
+stateDiagram-v2
+    [*] --> MainMenu
+    MainMenu --> DemoAll : 1
+    DemoAll --> MainMenu : Complete
+    MainMenu --> TableView : 2
+    TableView --> ExecuteSpecific : Input Func ID (1-21)
+    ExecuteSpecific --> SubMenuPrompt : Output demo
+    SubMenuPrompt --> TableView : Press 1 (See Table)
+    SubMenuPrompt --> MainMenu : Press 0 (Go Back)
+    TableView --> MainMenu : Input 0 (Exit Tier 2)
+    MainMenu --> [*] : 3 (Exit)
+```
+
+---
+
+### 3. Function Catalog Table & Direct Profiling
+Each DSL capability is cataloged with a unique numeric ID for fast interactive retrieval:
+
+| ID | Function / Macro Name | Purpose |
+| :---: | :--- | :--- |
+| **1** | `sum(...)` / `sum(vector)` | Variadic and dynamic vector summation |
+| **2** | `sub(...)` / `sub(vector)` | Variadic and dynamic vector subtraction |
+| **3** | `mul(...)` / `mul(vector)` | Variadic and dynamic vector multiplication |
+| **4** | `divi(...)` / `divi(vector)` | Variadic and vector safe division (zero-division guarded) |
+| **5** | `mx(...)` / `mx(vector)` | Maximum element search |
+| **6** | `mn(...)` / `mn(vector)` | Minimum element search |
+| **7** | `rem(a, b)` | Safe modulo operation |
+| **8** | `pwr(base, exp)` | Binary exponentiation $\mathcal{O}(\log n)$ |
+| **9** | `sqr(x)` | Square of a number ($x^2$) |
+| **10** | `cube(x)` | Cube of a number ($x^3$) |
+| **11** | `abs_val(x)` | Absolute value ($\|x\|$) |
+| **12** | `fact(n)` | Factorial ($n!$, non-negative guard) |
+| **13** | `sum_n(n)` | Gauss formula $\mathcal{O}(1)$ sum from 1 to $N$ |
+| **14** | `is_even(n)` | Even check ($n \pmod 2 == 0$) |
+| **15** | `is_odd(n)` | Odd check ($n \pmod 2 \ne 0$) |
+| **16** | `is_pos(n)` | Strict positive check ($n > 0$) |
+| **17** | `is_neg(n)` | Strict negative check ($n < 0$) |
+| **18** | `is_eq(a, b)` | Equality check |
+| **19** | `swp(a, b)` | In-place reference swap |
+| **20** | `loop / loop2 / loopr / loop2r` | Custom preprocessor loops |
+| **21** | `detach_C / in / out` | Fast I/O stream aliasing |
+
 > **Definition:** A backslash (`\`) placed at the very end of a line in C/C++ tells the preprocessor to delete the backslash and the following newline character (line splicing), effectively joining the two physical lines into a single logical line.
 > - **Why it is needed in `#define`:** Preprocessor `#define` directives naturally terminate at the end of the line (first newline). To write a macro that spans multiple lines for readability or when formatted by tools like `clang-format`, each intermediate line must end with `\`.
 
