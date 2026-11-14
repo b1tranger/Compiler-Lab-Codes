@@ -16,10 +16,10 @@
    - [6. Mandatory Source Code Theory Summary Footers](#6-mandatory-source-code-theory-summary-footers)
 5. [Build, Toolchain & Execution Standards](#build-toolchain--execution-standards)
 6. [Conversation & Prompt Archiving Guidelines (`doc/prompts/`)](#6-conversation--prompt-archiving-guidelines-docprompts)
-   - [1. Destination & Naming](#1-destination--naming)
-   - [2. Session Metadata Header](#2-session-metadata-header)
-   - [3. Standard Archive Structure](#3-standard-archive-structure)
-   - [4. Automatic Archiving Trigger](#4-automatic-archiving-trigger)
+   - [1. Destination & Serial Folder Naming](#1-destination--serial-folder-naming)
+   - [2. Required Files Inside Each Session Folder](#2-required-files-inside-each-session-folder)
+   - [3. Summary Markdown Format (`summary.md`)](#3-summary-markdown-format-summarymd)
+   - [4. Update Cadence (Keeping the Archive Current)](#4-update-cadence-keeping-the-archive-current)
 
 ---
 
@@ -224,34 +224,39 @@ python doc/Assignments/A1/A1.3.py
 
 ## 6. Conversation & Prompt Archiving Guidelines (`doc/prompts/`)
 
-To preserve debugging journeys, algorithmic reasoning, and interactive sessions across development turns:
+To preserve debugging journeys, algorithmic reasoning, and interactive sessions verbatim across development turns:
 
-### 1. Destination & Naming
+### 1. Destination & Serial Folder Naming
 * **Target Directory**: [`doc/prompts/`](file:///d:/GitHub/UITS/Compiler-Lab-Codes/doc/prompts/)
-* **Naming Convention**: `<index>. <Assignment_or_Lab_Topic>.md`
-  - Example: `1. A1.3.md`
-  - Example: `2. A1.2.md`
-  - Example: `3. 2.md`
-  - Example: `4. A4_b1t_Lang.md`
-  - Example: `5. Lexical_Token_Classification.md`
+* **Serial Session Folder Convention**: `doc/prompts/<N>. <Session Title>/`
+  - Example: `doc/prompts/13. Lexical_Token_Classification/`
+* **Determining `<N>`**: Inspect `doc/prompts/` to find the highest existing major integer prefix across both existing session folders and legacy flat `<N>. ...md` files, and assign `N = N_max + 1` for a new conversation session.
+* **Session Continuity**: Always update **the same session folder** across turns or when resuming a conversation; do NOT create a new major folder per turn.
 
-### 2. Session Metadata Header
-Every archived prompt record must start with standard metadata:
+### 2. Required Files Inside Each Session Folder
+Inside `doc/prompts/<N>. <Session Title>/`:
+1. **`transcript_full.jsonl`**: An exact, unmodified UTF-8 copy of `<appDataDir>/brain/<conversation-id>/.system_generated/logs/transcript_full.jsonl`. Never truncate, edit, or reformat lines in `transcript_full.jsonl`.
+2. **`conversation.md`**: A verbatim Markdown rendering generated directly from `transcript_full.jsonl`, including **every step exactly** without summarizing or omitting content: metadata (`Conversation ID`, `Session Folder`, `Continued From` if applicable), all `USER_INPUT.content`, all `PLANNER_RESPONSE.thinking` verbatim, all `PLANNER_RESPONSE.tool_calls` and tool/system outputs (`GENERIC` / `SYSTEM_MESSAGE`), and all `PLANNER_RESPONSE.content` verbatim.
+3. **`summary.md` (Conversation Summary Markdown)**: Maintained alongside `transcript_full.jsonl` and `conversation.md` in the same folder (including a clickable Table of Contents at the top per repo rules).
+4. **Companion Plans & Walkthroughs (Optional, Fractional Suffixes)**: Stored in the same folder as `<N>.1 Implementation Plan - <Plan Title>.md` and `<N>.2 Walkthrough - <Title>.md` if generated.
+
+### 3. Summary Markdown Format (`summary.md`)
+Include a clickable Table of Contents, session metadata, and concise structured sections:
 ```markdown
-# Part N: <Topic Description> (<Target File>)
+# <N>. <Session Title>
 
 - **Conversation ID**: `<conversation-id>`
 - **Timestamp**: `<YYYY-MM-DDTHH:MM:SS+Offset>`
 - **Model**: `<Model Name>`
 - **Target File**: [`<filename>`](file:///path/to/file)
+
+## 1. User Request Summary
+## 2. Code Inspected / Modified
+## 3. Analysis & Key Insights
+## 4. Final Solution & Outcomes
 ```
 
-### 3. Standard Archive Structure
-Each entry must include:
-1. **`## 1. User Request`**: Exact user input, prompt, and contextual IDE metadata (active file, line range).
-2. **`## 2. Code Inspected / Modified`**: Relevant diff blocks or source snippets before and after changes.
-3. **`## 3. Analysis & Key Insights`**: Compiler concept breakdown, lexical/parsing grammar insights, bug analysis, or algorithmic proof.
-4. **`## 4. Final Solution & Output`**: Include the final solution and AI response verbatim exactly as delivered in the chat (never use placeholders like `*(Refer to output in main chat)*` or truncated summaries), along with verified source code, compilation commands, and test outputs.
-
-### 4. Automatic Archiving Trigger
-* Automatically archive or append to `doc/prompts/` whenever a complete debugging sequence, project milestone, or major theoretical discussion concludes.
+### 4. Update Cadence (Keeping the Archive Current)
+Because the runtime writes a turn's final `PLANNER_RESPONSE` (final `thinking` and `content`) to `transcript_full.jsonl` after the turn finishes:
+1. **At the start of each turn (or when continuing from a prior `<conversation-id>`):** Copy `<appDataDir>/brain/<conversation-id>/.system_generated/logs/transcript_full.jsonl` to `doc/prompts/<N>. <Session Title>/transcript_full.jsonl` and regenerate `conversation.md` so the previous turn's finalized `thinking` and `content` are captured verbatim (and sync the prior conversation's folder if continuing).
+2. **Before sending each new final response:** Re-copy `transcript_full.jsonl`, regenerate `conversation.md` to capture all completed steps of the current turn, append the exact final response under `## Pending Final Response (Pre-Commit)` (noting it will be replaced verbatim from `transcript_full.jsonl` on the next sync), and create or update `summary.md` in the same folder.
