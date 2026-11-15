@@ -118,21 +118,36 @@ cd "$dir"; g++ -Wall -Wextra -std=c++20 "$fileName" -o "$fileNameWithoutExt.exe"
 ```
 
 ### Workspace Configuration (`.vscode/settings.json`)
-The project includes a pre-configured [`.vscode/settings.json`](file:///c:/Users/gsmur/OneDrive/Documents/GitHub/Compiler-Lab-Codes/.vscode/settings.json):
+The project includes an optimized [`.vscode/settings.json`](file:///c:/Users/gsmur/OneDrive/Documents/GitHub/Compiler-Lab-Codes/.vscode/settings.json) configured for seamless execution:
 ```json
 {
   "terminal.integrated.defaultProfile.windows": "PowerShell",
   "code-runner.runInTerminal": true,
+  "code-runner.fileDirectoryAsCwd": true,
+  "code-runner.stopPreviousRun": true,
   "code-runner.saveFileBeforeRun": true,
+  "code-runner.saveAllFilesBeforeRun": true,
   "code-runner.clearPreviousOutput": true,
   "code-runner.preserveFocus": false,
   "code-runner.ignoreSelection": true,
+  "code-runner.showExecutionMessage": false,
   "code-runner.executorMap": {
-    "c": "cd \"$dir\"; gcc -Wall -Wextra -std=c17 \"$fileName\" -o \"$fileNameWithoutExt.exe\"; if ($?) { .\\\"$fileNameWithoutExt.exe\" }",
-    "cpp": "cd \"$dir\"; g++ -Wall -Wextra -std=c++20 \"$fileName\" -o \"$fileNameWithoutExt.exe\"; if ($?) { .\\\"$fileNameWithoutExt.exe\" }",
+    "c": "cd \"$dir\"; gcc -Wall -Wextra -std=c17 -I. \"$fileName\" -o \"$fileNameWithoutExt.exe\"; if ($?) { & \".\\$fileNameWithoutExt.exe\" }",
+    "cpp": "cd \"$dir\"; g++ -Wall -Wextra -std=c++20 -I. \"$fileName\" -o \"$fileNameWithoutExt.exe\"; if ($?) { & \".\\$fileNameWithoutExt.exe\" }",
     "python": "python -u \"$fileName\""
+  },
+  "code-runner.executorMapByFileExtension": {
+    ".h": "cd \"$dir\"; if (Test-Path \"$fileNameWithoutExt.cpp\") { $t = \"$fileNameWithoutExt.cpp\"; $e = \"$fileNameWithoutExt.exe\" } elseif (Test-Path \"main.cpp\") { $t = \"main.cpp\"; $e = \"main.exe\" } else { $t = \"\"; Write-Warning \"Header file '$fileName' cannot be executed directly without a driver .cpp file.\" }; if ($t) { g++ -Wall -Wextra -std=c++20 -I. $t -o $e; if ($?) { & \".\\$e\" } }"
   }
 }
+```
+
+#### Key Seamless Code Runner Features:
+1. **Interactive Keyboard Input (`code-runner.runInTerminal: true`, `preserveFocus: false`)**: Shifts focus directly into the integrated terminal so prompts (`cin >>`, `scanf`) accept keystrokes immediately without mouse clicks.
+2. **Auto-Stop Hanging Processes (`code-runner.stopPreviousRun: true`)**: Automatically terminates any still-running interactive program (e.g., an active while-loop menu) before starting a new build, preventing commands from typing into standard input.
+3. **Dirty Multi-File Auto-Save (`code-runner.saveAllFilesBeforeRun: true`)**: Automatically saves both the active file and companion header files (`main.h`, `new.h`), ensuring edits in headers are never compiled stale.
+4. **Local Header Inclusion (`-I.` & `fileDirectoryAsCwd: true`)**: Guarantees `-I.` is passed so GCC immediately discovers local headers in the directory.
+5. **Smart Header Execution (`executorMapByFileExtension: { ".h": ... }`)**: If you press Run while viewing a `.h` file, Code Runner automatically detects and runs the companion `.cpp` driver (e.g. `main.cpp` or `new.cpp`) instead of throwing an undefined reference linker error.
 ```
 
 ### Native VS Code Build & Run Tasks (`.vscode/tasks.json`)
@@ -190,6 +205,7 @@ make run
    - `-Wall -Wextra`: Enables warnings to catch common mistakes (uninitialized variables, type mismatches).
    - `-g`: Generates debug symbols for `gdb`.
    - `-O2`: Enables optimization for standard execution.
+   - `-I<directory>`: Adds `<directory>` to the preprocessor search path for local header files (e.g., `main.h`, `new.h`), avoiding include failures when compiling from other directories.
 
 2. **Debugging with GDB**:
    ```bash

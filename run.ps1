@@ -47,17 +47,17 @@ $ext = $fileItem.Extension.ToLower()
 
 if ($ext -eq ".cpp") {
     $compiler = "g++"
-    $flags = @("-Wall", "-Wextra", "-std=c++20", $fileItem.FullName, "-o", $exePath)
+    $flags = @("-Wall", "-Wextra", "-std=c++20", "-I$dir", $fileItem.Name, "-o", "$nameNoExt.exe")
 } elseif ($ext -eq ".c") {
     $compiler = "gcc"
-    $flags = @("-Wall", "-Wextra", "-std=c17", $fileItem.FullName, "-o", $exePath)
+    $flags = @("-Wall", "-Wextra", "-std=c17", "-I$dir", $fileItem.Name, "-o", "$nameNoExt.exe")
 } else {
     Write-Error "Unsupported file type '$ext'. Please provide a .cpp or .c file."
     exit 1
 }
 
 Write-Host "[Runner] Compiling $($fileItem.Name) with $compiler..." -ForegroundColor Yellow
-$process = Start-Process -FilePath $compiler -ArgumentList $flags -NoNewWindow -Wait -PassThru
+$process = Start-Process -FilePath $compiler -ArgumentList $flags -WorkingDirectory $dir -NoNewWindow -Wait -PassThru
 
 if ($process.ExitCode -ne 0) {
     Write-Host "[Runner] Compilation failed with exit code $($process.ExitCode)." -ForegroundColor Red
