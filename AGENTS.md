@@ -18,7 +18,7 @@
 6. [Conversation & Prompt Archiving Guidelines (`doc/prompts/`)](#6-conversation--prompt-archiving-guidelines-docprompts)
    - [1. Destination & Serial Folder Naming](#1-destination--serial-folder-naming)
    - [2. Required Files Inside Each Session Folder](#2-required-files-inside-each-session-folder)
-   - [3. Summary Markdown Format (`summary.md`)](#3-summary-markdown-format-summarymd)
+   - [3. Full Authentic Chat Archive Format (`conversation.md`)](#3-full-authentic-chat-archive-format-conversationmd)
    - [4. Update Cadence (Keeping the Archive Current)](#4-update-cadence-keeping-the-archive-current)
 
 ---
@@ -236,27 +236,62 @@ To preserve debugging journeys, algorithmic reasoning, and interactive sessions 
 ### 2. Required Files Inside Each Session Folder
 Inside `doc/prompts/<N>. <Session Title>/`:
 1. **`transcript_full.jsonl`**: An exact, unmodified UTF-8 copy of `<appDataDir>/brain/<conversation-id>/.system_generated/logs/transcript_full.jsonl`. Never truncate, edit, or reformat lines in `transcript_full.jsonl`.
-2. **`conversation.md`**: A verbatim Markdown rendering generated directly from `transcript_full.jsonl`, including **every step exactly** without summarizing or omitting content: metadata (`Conversation ID`, `Session Folder`, `Continued From` if applicable), all `USER_INPUT.content`, all `PLANNER_RESPONSE.thinking` verbatim, all `PLANNER_RESPONSE.tool_calls` and tool/system outputs (`GENERIC` / `SYSTEM_MESSAGE`), and all `PLANNER_RESPONSE.content` verbatim.
-3. **`summary.md` (Conversation Summary Markdown)**: Maintained alongside `transcript_full.jsonl` and `conversation.md` in the same folder (including a clickable Table of Contents at the top per repo rules).
-4. **Companion Plans & Walkthroughs (Optional, Fractional Suffixes)**: Stored in the same folder as `<N>.1 Implementation Plan - <Plan Title>.md` and `<N>.2 Walkthrough - <Title>.md` if generated.
+2. **`conversation.md` (Full Authentic Chat Archive)**: A complete, human-readable Markdown rendering that **looks exactly the same as the AI response in the chat interface, alongside the user prompts**. It captures every turn in full detail without replacing or diluting the conversation with high-level summaries.
+3. **Companion Plans & Walkthroughs (Optional, Fractional Suffixes)**: Stored in the same folder as `<N>.1 Implementation Plan - <Plan Title>.md` and `<N>.2 Walkthrough - <Title>.md` if generated.
 
-### 3. Summary Markdown Format (`summary.md`)
-Include a clickable Table of Contents, session metadata, and concise structured sections:
+> [!IMPORTANT]
+> **No Synthetic Executive Summaries (`summary.md`)**:
+> Do NOT create or maintain high-level executive summaries that only provide abbreviated recaps (e.g. "User Request Summary", "Code Inspected", "Analysis & Key Insights", "Final Solution & Outcomes"). Synthetic summaries strip away the actual detailed explanations, interactive step-by-step guidance, code blocks, comparative analysis, and diagrams presented in the chat. The archive must preserve the authentic, full conversation experience as it appeared to the user in the chat interface.
+
+### 3. Full Authentic Chat Archive Format (`conversation.md`)
+The conversation archive must follow this structure, rendering every turn sequentially:
+
 ```markdown
 # <N>. <Session Title>
 
 - **Conversation ID**: `<conversation-id>`
-- **Timestamp**: `<YYYY-MM-DDTHH:MM:SS+Offset>`
+- **Date / Timestamp**: `<YYYY-MM-DDTHH:MM:SS+Offset>`
 - **Model**: `<Model Name>`
-- **Target File**: [`<filename>`](file:///path/to/file)
+- **Target File(s)**: [`<filename>`](file:///path/to/file)
 
-## 1. User Request Summary
-## 2. Code Inspected / Modified
-## 3. Analysis & Key Insights
-## 4. Final Solution & Outcomes
+---
+
+## Turn 1
+
+### 👤 User
+
+<USER_REQUEST>
+<Exact verbatim user prompt text, including any context tags>
+</USER_REQUEST>
+
+### 🧠 AI Thinking
+
+<details>
+<summary>Click to expand internal reasoning</summary>
+
+<Verbatim model chain-of-thought>
+
+</details>
+
+### 🤖 Assistant Response
+
+<The exact, complete AI response as rendered in the chat interface, containing all markdown headings, explanation prose, comparative tables, alert callouts, LaTeX math, file links, and code blocks verbatim>
+
+---
+
+## Turn 2
+
+### 👤 User
+...
+
+### 🧠 AI Thinking
+...
+
+### 🤖 Assistant Response
+...
 ```
 
 ### 4. Update Cadence (Keeping the Archive Current)
 Because the runtime writes a turn's final `PLANNER_RESPONSE` (final `thinking` and `content`) to `transcript_full.jsonl` after the turn finishes:
 1. **At the start of each turn (or when continuing from a prior `<conversation-id>`):** Copy `<appDataDir>/brain/<conversation-id>/.system_generated/logs/transcript_full.jsonl` to `doc/prompts/<N>. <Session Title>/transcript_full.jsonl` and regenerate `conversation.md` so the previous turn's finalized `thinking` and `content` are captured verbatim (and sync the prior conversation's folder if continuing).
-2. **Before sending each new final response:** Re-copy `transcript_full.jsonl`, regenerate `conversation.md` to capture all completed steps of the current turn, append the exact final response under `## Pending Final Response (Pre-Commit)` (noting it will be replaced verbatim from `transcript_full.jsonl` on the next sync), and create or update `summary.md` in the same folder.
+2. **Before sending each new final response:** Re-copy `transcript_full.jsonl`, regenerate `conversation.md` to capture all completed steps of the current turn (new user prompt, tool calls, and intermediate `thinking`), and append the exact final response being sent under `### 🤖 Assistant Response (Pre-Commit)` (noting it will be replaced verbatim from `transcript_full.jsonl` on the next sync).
